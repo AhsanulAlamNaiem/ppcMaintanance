@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:ppcmaintanance/screens/production.dart';
+import 'package:ppcmaintanance/screens/SecondPage.dart';
 
-class FirstScreen extends StatelessWidget {
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -20,9 +22,9 @@ class FirstScreen extends StatelessWidget {
 }
 
 class Btn extends StatelessWidget {
-  String title;
-  Widget screen;
-  Btn(this.title, this.screen);
+  final String title;
+  final Widget screen;
+  const Btn(this.title, this.screen, {super.key});
 
   @override
   Widget build(BuildContext context) {
