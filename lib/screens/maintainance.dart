@@ -40,9 +40,7 @@ class AllMaintainance extends StatelessWidget {
               },
               icon: Icon(Icons.arrow_back)),
         ),
-        body: Center(
-          child: ElevatedButton(onPressed: () {}, child: Text("")),
-        ),
+        body: Center(child: Text("Machines are here!")),
       ),
     );
   }

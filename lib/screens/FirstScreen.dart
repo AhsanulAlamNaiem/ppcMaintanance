@@ -6,7 +6,7 @@ class FirstScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: Text("First Screen")),
+        appBar: AppBar(title: Text(" Home ")),
         body: Center(
           child: Column(children: [
             Btn("Production", Production()),
