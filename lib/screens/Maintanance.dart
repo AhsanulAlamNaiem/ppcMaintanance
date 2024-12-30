@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:ppcmaintanance/screens/HomeScreen.dart';
+import 'package:http/http.dart' as http;
 
 class SecondScreen extends StatelessWidget {
   const SecondScreen({super.key});
@@ -34,13 +37,26 @@ class AllMaintainance extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(
           title: Text("AllMaintainance"),
+          actions: [IconButton(onPressed: () {}, icon: Icon(Icons.refresh))],
           leading: IconButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               icon: Icon(Icons.arrow_back)),
         ),
-        body: lst(10, machinelist: []),
+        body: FutureBuilder<List>(
+            future: fetchMachines(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text("Erros: ${snapshot.error}"));
+              } else if (snapshot.hasData) {
+                List machines = snapshot.data!;
+                return lst(10, machines: machines);
+              }
+              return Center(child: Text('No data available'));
+            }),
       ),
     );
   }
@@ -69,9 +85,9 @@ class BreakdownLogs extends StatelessWidget {
   }
 }
 
-Widget lst(int child, {required List<dynamic> machinelist}) {
+Widget lst(int child, {required List machines}) {
   return ListView.builder(
-      itemCount: 20,
+      itemCount: machines.length,
       itemBuilder: (context, index) {
         return Card(
           shape: RoundedRectangleBorder(
@@ -88,14 +104,14 @@ Widget lst(int child, {required List<dynamic> machinelist}) {
               child: Column(
                 children: [
                   Text(
-                    "Machine $index",
+                    "${machines[index]['machine_id']}",
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    "This is the description of machine $index",
+                    "${machines[index]['status']}",
                     style: TextStyle(
                       color: Colors.grey,
                     ),
@@ -106,4 +122,45 @@ Widget lst(int child, {required List<dynamic> machinelist}) {
           ),
         );
       });
+}
+
+Future<List> fetchMachines() async {
+  final url = Uri.parse(
+      "https://fast-tracker-bo3s.onrender.com/api/maintenance/machines/?format=json");
+
+  final response = await http.get(url);
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  } else {
+    return [];
+  }
+}
+
+class Machine {
+  String category;
+  String type;
+  String brand;
+  String model_number;
+  String serial_no;
+  int floor_no;
+  int line_no;
+  String supplier;
+  String purchase_date;
+  String location;
+  String last_breakdown_start;
+  String status;
+
+  Machine(
+      this.category,
+      this.type,
+      this.brand,
+      this.model_number,
+      this.serial_no,
+      this.floor_no,
+      this.line_no,
+      this.supplier,
+      this.purchase_date,
+      this.location,
+      this.last_breakdown_start,
+      this.status);
 }
