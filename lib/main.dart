@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ppcmaintanance/screens/HomeScreen.dart';
-import 'package:ppcmaintanance/screens/Maintanance.dart';
+import 'package:ppcmaintanance/screens/home_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -12,16 +11,22 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: HomeScreen(),
+      home: LogInPage(),
     );
   }
 }
 
-class LogInPage extends StatelessWidget {
+class LogInPage extends StatefulWidget {
+  const LogInPage({super.key});
+
+  @override
+  _LogInPageState createState() => _LogInPageState();
+}
+
+class _LogInPageState extends State<LogInPage>{
   String email = "";
   String password = "";
 
-  LogInPage({super.key});
 
   @override
   Widget build(BuildContext context) {
