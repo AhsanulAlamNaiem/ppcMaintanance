@@ -4,6 +4,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 
 class ProductionPage extends StatefulWidget {
+  const ProductionPage({super.key});
+
   @override
   _ProductionPageState createState() => _ProductionPageState();
 }

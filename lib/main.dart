@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ppcmaintanance/screens/breakdown.dart';
 import 'package:ppcmaintanance/screens/home_screen.dart';
 
 void main() {
@@ -12,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: LogInPage(),
+      home: HomeScreen(),
     );
   }
 }
