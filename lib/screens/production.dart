@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ppcmaintanance/main.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 
 
 class ProductionPage extends StatefulWidget {

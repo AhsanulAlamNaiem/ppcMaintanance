@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:ppcmaintanance/screens/inventory.dart';
 import 'package:ppcmaintanance/screens/production.dart';
 
-import 'breakdown.dart';
 import 'maintainance.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -17,8 +16,7 @@ class HomeScreen extends StatelessWidget {
           child: Column(children: [
             Btn("Production", ProductionPage()),
             Btn("Maintanance", Maintanance()),
-            Btn("Inventory", InventoryPage()),
-            Btn("Breakdown Logs", BreakdownPage())
+            Btn("Inventory", InventoryPage())
           ]),
         ),
       ),

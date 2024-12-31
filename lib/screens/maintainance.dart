@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:ppcmaintanance/screens/home_screen.dart';
 import 'package:http/http.dart' as http;
 
+import 'breakdown.dart';
+
 class Maintanance extends StatelessWidget {
   const Maintanance({super.key});
 
@@ -23,7 +25,7 @@ class Maintanance extends StatelessWidget {
           child: Column(
             children: [
               Btn("All Maintainance", AllMaintainances()),
-              Btn("BreakdownLogs", BreakdownLogs()),
+              Btn("BreakdownLogs", BreakdownPage()),
             ],
           ),
         ),
