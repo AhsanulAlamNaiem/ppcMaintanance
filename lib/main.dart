@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ppcmaintanance/screens/breakdown.dart';
 import 'package:ppcmaintanance/screens/home_screen.dart';
 
 void main() {
@@ -63,3 +64,35 @@ class _LogInPageState extends State<LogInPage>{
     );
   }
 }
+
+
+
+class SamplePage extends StatelessWidget {
+  final String title;
+  const SamplePage({required this.title, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text(title),
+          leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(Icons.arrow_back)),
+        ),
+        body: Center(
+          child: addWidget(),
+        ),
+      ),
+    );
+  }
+
+  Widget addWidget(){
+    return Text("this is a sample page, override to add more widgets");
+  }
+}
+
+

@@ -22,3 +22,4 @@ class InventoryPage extends StatelessWidget {
     );
   }
 }
+
