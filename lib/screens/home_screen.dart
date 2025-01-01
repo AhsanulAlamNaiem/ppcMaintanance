@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ppcmaintanance/main.dart';
 import 'package:ppcmaintanance/screens/inventory.dart';
 import 'package:ppcmaintanance/screens/production.dart';
 
@@ -11,7 +12,12 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: Text(" Home ")),
+        appBar: AppBar(
+          title: Text(" Home "),
+          actions: [TextButton(onPressed: (){
+            Navigator.pop(context);
+            Navigator.push(context, MaterialPageRoute(builder: (context)=> LogInPage()));
+            }, child: Text("Log out"))],),
         body: Center(
           child: Column(children: [
             Btn("Production", ProductionPage()),
