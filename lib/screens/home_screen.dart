@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:ppcmaintanance/main.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ppcmaintanance/screens/inventory.dart';
 import 'package:ppcmaintanance/screens/production.dart';
 
+import '../login_page.dart';
 import 'maintainance.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
+  HomeScreen({super.key});
+  final storage = FlutterSecureStorage();
+  final securedKey = "credential";
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
           title: Text(" Home "),
-          actions: [TextButton(onPressed: (){
+          actions: [TextButton(onPressed: () async {
+            await storage.delete(key: securedKey);
+
             Navigator.pop(context);
             Navigator.push(context, MaterialPageRoute(builder: (context)=> LogInPage()));
             }, child: Text("Log out"))],),
