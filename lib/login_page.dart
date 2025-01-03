@@ -25,9 +25,10 @@ class _LogInPageState extends State<LogInPage>{
       isLoading = true;
     });
     final url = Uri.parse(
-        "https://ppcinern.pythonanywhere.com/login");
+        "https://fast-tracker-bo3s.onrender.com/api/user_management/login/");
+    //https://ppcinern.pythonanywhere.com/login
     final body = jsonEncode({
-      "username": email,
+      "email": email,
       "password": password
     });
 
@@ -40,11 +41,14 @@ class _LogInPageState extends State<LogInPage>{
 
     if(response.statusCode == 200){
       final data = jsonDecode(response.body);
+      final token = data['token'];
+      print("Response data: $token");
 
 
-      if(data['success']) {
-        await storage.write(key: securedKey, value: email);
-        print("$securedKey : $email");
+      if(token!=null) {
+        await storage.write(key: securedKey, value: token );
+        print("$securedKey : ${data['token']}");
+
         showDialog(context: context, builder: (context)=>AlertDialog(
           title: Text("Login Successful"),
           content: Text("Welcome, ${data["name"]}"),

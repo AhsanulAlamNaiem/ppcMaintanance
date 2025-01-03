@@ -26,7 +26,11 @@ class HomeScreen extends StatelessWidget {
           child: Column(children: [
             Btn("Production", ProductionPage()),
             Btn("Maintanance", Maintanance()),
-            Btn("Inventory", InventoryPage())
+            Btn("Inventory", InventoryPage()),
+            ElevatedButton(onPressed: () async {
+              final value = await storage.read(key: securedKey);
+              print("$securedKey : $value");
+            }, child: Text("read Secure data"))
           ]),
         ),
       ),
