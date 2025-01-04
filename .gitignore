@@ -51,3 +51,4 @@ build/
 .flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
+apkFileCopiertoNewDest.dart
