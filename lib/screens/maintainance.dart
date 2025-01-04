@@ -46,8 +46,7 @@ class BreakdownLogs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Text("BreakdownLogs"),
           leading: IconButton(
@@ -59,8 +58,7 @@ class BreakdownLogs extends StatelessWidget {
         body: Center(
           child: ElevatedButton(onPressed: () {}, child: Text("")),
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -107,7 +105,9 @@ class _MachineListScreenState extends State<AllMaintainances> {
               }
               return Center(child: Text('No data available'));
             }),
-      );
+      );//Scaffold
+
+
     }
   }
 

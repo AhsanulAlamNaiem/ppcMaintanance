@@ -12,9 +12,9 @@ class HomeScreen extends StatelessWidget {
   final securedKey = "credential";
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+    return Scaffold(
         appBar: AppBar(
+          // leading: Text("what?"),
           title: Text(" Home "),
           actions: [TextButton(onPressed: () async {
             await storage.delete(key: securedKey);
@@ -33,7 +33,6 @@ class HomeScreen extends StatelessWidget {
             }, child: Text("read Secure data"))
           ]),
         ),
-      ),
     );
   }
 }

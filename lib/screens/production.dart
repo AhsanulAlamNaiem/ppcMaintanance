@@ -11,8 +11,7 @@ class ProductionPage extends StatefulWidget {
 class _ProductionPageState extends State<ProductionPage>{
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+    return       Scaffold(
         appBar: AppBar(
           title: Text("Production"),
 
@@ -35,8 +34,7 @@ class _ProductionPageState extends State<ProductionPage>{
               ),
             ],
           ),
-      ),
-    );
+      );
   }
 
 }

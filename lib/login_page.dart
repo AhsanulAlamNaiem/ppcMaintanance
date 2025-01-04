@@ -54,7 +54,7 @@ class _LogInPageState extends State<LogInPage>{
           content: Text("Welcome, ${data["name"]}"),
           actions: [
             TextButton(onPressed: (){Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>HomeScreen()));}, child: Text("Ok"))
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>HomeScreen()));}, child: Text("Ok"))
           ],
         )
         );

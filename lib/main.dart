@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ppcmaintanance/screens/home_screen.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 
 import 'package:ppcmaintanance/login_page.dart';
@@ -50,9 +48,9 @@ class _SPlashScreenState extends State<SplashScreen>{
             final status = snapshot.data?? false;
             Future((){
               if(status){
-                Navigator.push(context, MaterialPageRoute(builder: (context)=>HomeScreen()));
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>HomeScreen()));
               } else {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=>LogInPage()));
+                Navigator.pushReplacement (context, MaterialPageRoute(builder: (context)=>LogInPage()));
               }
             });
 
