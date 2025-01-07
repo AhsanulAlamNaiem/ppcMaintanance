@@ -18,7 +18,12 @@ class _LogInPageState extends State<LogInPage>{
   String password = "";
   bool isLoading = false;
   final storage = FlutterSecureStorage();
-  final securedKey = "credential";
+  final securedKey = "Token";
+  final securedUserInfo = "UserInfo";
+  final securedName = "name";
+  final securedDesignation = "designation";
+  final securedDepartment = "dept";
+  final securedCompany = 'company';
 
   Future<void> login() async{
     setState(() {
@@ -35,35 +40,56 @@ class _LogInPageState extends State<LogInPage>{
     final headers = {'Content-Type': 'application/json'};
     final response = await http.post(url, body: body, headers: headers);
 
-    setState(() {
-      isLoading = false;
-    });
-
     if(response.statusCode == 200){
       final data = jsonDecode(response.body);
       final token = data['token'];
       print("Response data: $token");
+      final cookies = response.headers['set-cookie']!.split(";");
+      final cookie = "${cookies[0]}; ${cookies[4].split(",")[1]}";
 
 
       if(token!=null) {
-        await storage.write(key: securedKey, value: token );
-        print("$securedKey : ${data['token']}");
+        final employeUrl = Uri.parse(
+            "https://fast-tracker-bo3s.onrender.com/api/user_management/employee/");
+        final headers = {"cookie":cookie,
+          "Authorization": "Token $token"};
+
+        print(headers);
+        final response = await http.get(employeUrl, headers: headers);
+
+        if(response.statusCode==200){
+         Map employeeInfo = jsonDecode(response.body);
+
+        await storage.write(key: securedUserInfo, value: employeeInfo.toString());
+         await storage.write(key: securedKey, value: token);
+         await storage.write(key: securedName, value: employeeInfo["name"]);
+         await storage.write(key: securedDesignation, value: employeeInfo["designation"]);
+         await storage.write(key: securedDepartment, value: employeeInfo["department"]);
+         await storage.write(key: securedCompany, value: employeeInfo["company"]);
+
 
         showDialog(context: context, builder: (context)=>AlertDialog(
           title: Text("Login Successful"),
           content: Text("Welcome, ${data["name"]}"),
           actions: [
             TextButton(onPressed: (){Navigator.pop(context);
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>HomeScreen()));}, child: Text("Ok"))
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>HomeScreen(user: employeeInfo,)));}, child: Text("Ok"))
           ],
         )
         );
+        } else {
+          showError('Failed Fetching User Info\n\n ${response.body} ${response.statusCode}');
+          print(response.body);
+        }
       } else {
-        showError('Invalid credential.');
+        showError('Failed to Login');
       }
     } else {
       showError("${response.body}}");
     }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void showError(String message){
