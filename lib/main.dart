@@ -62,6 +62,7 @@ class _SPlashScreenState extends State<SplashScreen>{
       "department": departmente,
       "company": companye
     };
+    print("token $token");
     if(token!=null){
       return userInfo;
     }
@@ -77,10 +78,13 @@ class _SPlashScreenState extends State<SplashScreen>{
           future: loginControl(),
           builder: (context, snapshot) {
             Future((){
-                  if(snapshot.hasData) {
+                  if(snapshot.connectionState==ConnectionState.waiting){
+                    return CircularProgressIndicator();
+                  } else if(snapshot.hasData) {
                     Navigator.pushReplacement(context, MaterialPageRoute(
                         builder: (context) => HomeScreen(user: snapshot.data!,)));
                   } else{
+                    print(snapshot.data);
                     Navigator.pushReplacement (context, MaterialPageRoute(builder: (context)=>LogInPage()));
                   }
             });

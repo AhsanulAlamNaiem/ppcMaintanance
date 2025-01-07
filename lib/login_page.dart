@@ -50,7 +50,7 @@ class _LogInPageState extends State<LogInPage>{
 
       if(token!=null) {
         final employeUrl = Uri.parse(
-            "https://fast-tracker-bo3s.onrender.com/api/user_management/employee/");
+            "https://fast-tracker-bo3s.onrender.com/api/user_management/employee-details/");
         final headers = {"cookie":cookie,
           "Authorization": "Token $token"};
 
