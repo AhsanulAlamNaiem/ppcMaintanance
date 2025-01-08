@@ -4,6 +4,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ppcmaintanance/login_page.dart';
 import 'package:ppcmaintanance/screens/inventory.dart';
 import 'package:ppcmaintanance/screens/production.dart';
+import 'breakdown.dart';
+import 'machine_scanner.dart';
 import 'maintainance.dart';
 
 class HomeScreen extends StatefulWidget{
@@ -17,6 +19,7 @@ class HomeScreen extends StatefulWidget{
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex=1;
   final Map user;
   _HomeScreenState(this.user);
   final storage = FlutterSecureStorage();
@@ -29,8 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     // return Text("$user");
@@ -38,13 +39,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  Widget homeScreenBuilder(Map user){return Scaffold(
-      appBar: AppBar(
-        leading: null,
-        // leading: Text("what?"),
-        title: Text(" Home "),
-      ),
-      body: Center(
+  Widget homeScreenBuilder(Map user){
+
+
+    Widget funcHomeBuilder(){
+      return Center(
         child: Column(children: [
           Btn("Production", ProductionPage()),
           Btn("Maintenance", Maintanance()),
@@ -54,7 +53,48 @@ class _HomeScreenState extends State<HomeScreen> {
             print("$securedKey : $value");
           }, child: Text("read Secure data"))
         ]),
+      );
+    }
+
+
+    final List<Widget> pages = [
+      funcHomeBuilder(),
+      funcHomeBuilder(),
+      MachineScanner()
+    ];
+
+
+    return
+     WillPopScope(
+         onWillPop: () async {
+          final shouldAllowPop = _currentIndex==1?true:false;
+          setState(() {
+            _currentIndex =1;
+          });
+          return shouldAllowPop;// Block back navigation
+    },
+    child: Scaffold(
+      appBar: AppBar(
+        leading: null,
+        // leading: Text("what?"),
+        title: Text(" Home "),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+      currentIndex: _currentIndex,
+        selectedItemColor: Colors.green,
+        onTap: (index){
+          setState(() {
+            _currentIndex= index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: "Dashboard"),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.document_scanner), label: "Machine"),
+        ],
+
+      ),
+      body:pages[_currentIndex],
       endDrawer: Drawer(
         child: SizedBox(
             width: 100,
@@ -99,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             )),
       ),
-    );
+    ));
   }
 }
 

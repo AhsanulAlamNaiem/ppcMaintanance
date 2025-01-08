@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ppcmaintanance/screens/home_screen.dart';
 import 'package:ppcmaintanance/login_page.dart';
-import 'dart:convert';
 
 void main() {
   runApp(MyApp());
@@ -56,7 +55,8 @@ class _SPlashScreenState extends State<SplashScreen>{
     final departmente = await storage.read(key: securedDepartment)??"null";
     final companye = await storage.read(key: securedCompany)??"null";
 
-    final userInfo = {
+    final userInfo =
+    {
       "name": namee,
       "designation": designatione,
       "department": departmente,
@@ -88,7 +88,10 @@ class _SPlashScreenState extends State<SplashScreen>{
                     Navigator.pushReplacement (context, MaterialPageRoute(builder: (context)=>LogInPage()));
                   }
             });
-            return Text("Nothing to do");
+            return Center(child:
+            Column(children: [
+              CircularProgressIndicator()
+            ],));
           },
         ));
   }

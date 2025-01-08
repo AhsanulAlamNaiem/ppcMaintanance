@@ -60,7 +60,8 @@ class _LogInPageState extends State<LogInPage>{
         if(response.statusCode==200){
          Map employeeInfo = jsonDecode(response.body);
 
-        await storage.write(key: securedUserInfo, value: employeeInfo.toString());
+        await storage.write(key: securedUserInfo, value: jsonEncode(employeeInfo));
+
          await storage.write(key: securedKey, value: token);
          await storage.write(key: securedName, value: employeeInfo["name"]);
          await storage.write(key: securedDesignation, value: employeeInfo["designation"]);
