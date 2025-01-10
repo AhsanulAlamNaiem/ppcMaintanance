@@ -15,7 +15,6 @@ class MachineScanner extends StatefulWidget {
 class _MachineScannerPageState extends State<MachineScanner>{
   String? qrCodeValue;
   bool isScanning = true;
-  bool isPatching = false;
   final storage = FlutterSecureStorage();
   final securedDesignation = "designation";
 
@@ -66,7 +65,6 @@ class _MachineScannerPageState extends State<MachineScanner>{
   }
 
   Widget funcMachineDetailsBuilder({required String model}){
-
     return FutureBuilder(
       future: funcFetchMachineDetails(model),
       builder: (context, snapshot) {
@@ -76,38 +74,7 @@ class _MachineScannerPageState extends State<MachineScanner>{
               CircularProgressIndicator()
             ],));
           } else if(snapshot.hasData) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  isPatching?Text("Model: $model\n\n"):Text(""),
-                  Text("Machine Id: ${snapshot.data!['results'][0]['machine_id']}"),
-                  Text("Model Number: ${snapshot.data!['results'][0]['model_number']}"),
-                  Text("Serial No: ${snapshot.data!['results'][0]['serial_no']}"),
-                  Text("Purchase Date: ${snapshot.data!['results'][0]['purchase_date']}"),
-                  Text("Last Breakdown Start: ${snapshot.data!['results'][0]['last_breakdown_start']}"),
-                  Text("Status: ${snapshot.data!['results'][0]['status']}"),
-                  Spacer(),
-                  Text("Your Rule is "),
-                  Text("Do you want to change the machine Status as Broken?"),
-
-                  isPatching? CircularProgressIndicator():ElevatedButton(onPressed: ()async{
-                      setState(() {
-                        isPatching = true;
-                      });
-                      final url = "https://machine-maintenance.onrender.com/api/maintenance/machines/${snapshot.data!['results'][0]['id']}/";
-                      final body = {
-                        "status": "Active"
-                      };
-
-                      await http.patch(Uri.parse(url), body:body);
-                      setState(() {
-                        isPatching = false;
-                      });
-                  }, child: Text("Yes")),
-                  Spacer(),
-                  ElevatedButton(onPressed: (){}, child: Text("Scan Again")),
-                ],
-              );
+            return MachineDetailsPage(machineDetails:  snapshot.data!);
           } else{
             return Center(
               child: Column(
@@ -127,5 +94,93 @@ class _MachineScannerPageState extends State<MachineScanner>{
         body:  isScanning? funcScannerBuilder():funcMachineDetailsBuilder(model: qrCodeValue??"No Model Detected"),
       );
   }
+}
 
+
+class MachineDetailsPage extends StatefulWidget {
+  final Map machineDetails;
+  const MachineDetailsPage({super.key, required this.machineDetails});
+
+  @override
+  _MachineDetailsPageState createState() => _MachineDetailsPageState();
+}
+
+class _MachineDetailsPageState extends State<MachineDetailsPage> {
+  bool isPatching = false;
+
+  Future<String?> getDesignation() async {
+    final storage = FlutterSecureStorage();
+    final securedDesignation = "designation";
+    final designation = await storage.read(key: securedDesignation);
+
+    return designation;
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    final machine = widget.machineDetails['results'][0];
+
+    return
+      FutureBuilder(future: getDesignation(), builder: (context, snapshot){
+        if(snapshot.connectionState==ConnectionState.waiting){
+          return CircularProgressIndicator();
+        }
+        else {
+          final desigNation = snapshot.data??"Unknown";
+        return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Machine ID: ${machine['machine_id']}"),
+          Text("Model Number: ${machine['model_number']}"),
+          Text("Serial No: ${machine['serial_no']}"),
+          Text("Purchase Date: ${machine['purchase_date']}"),
+          Text("Last Breakdown Start: ${machine['last_breakdown_start']}"),
+          Text("Status: ${machine['status']}"),
+          const Spacer(),
+          Text("Your Rule is: $desigNation"),
+          const Text("Do you want to change the machine status to Broken?"),
+          const SizedBox(height: 16.0),
+          isPatching
+              ? const Center(child: CircularProgressIndicator())
+              : ElevatedButton(
+            onPressed: () async {
+              setState(() {
+                isPatching = true;
+              });
+
+              final url =
+                  "https://machine-maintenance.onrender.com/api/maintenance/machines/${machine['id']}/";
+              final body = {"status": "Broken"};
+
+              try {
+                await http.patch(
+                  Uri.parse(url),
+                  body: body,
+                );
+              } catch (e) {
+                // Handle error
+                print("Error: $e");
+              }
+
+              setState(() {
+                isPatching = false;
+              });
+            },
+            child: const Text("Yes"),
+          ),
+          const Spacer(),
+          ElevatedButton(
+            onPressed: () {
+              // Implement the scan again functionality
+            },
+            child: const Text("Scan Again"),
+          ),
+        ],
+      ),
+    );}
+      });
+  }
 }
