@@ -3,6 +3,7 @@ import 'package:vibration/vibration.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class MachineScanner extends StatefulWidget {
   const MachineScanner({super.key});
@@ -14,6 +15,9 @@ class MachineScanner extends StatefulWidget {
 class _MachineScannerPageState extends State<MachineScanner>{
   String? qrCodeValue;
   bool isScanning = true;
+  bool isPatching = false;
+  final storage = FlutterSecureStorage();
+  final securedDesignation = "designation";
 
   Widget funcScannerBuilder() {
     return Column(
@@ -54,6 +58,7 @@ class _MachineScannerPageState extends State<MachineScanner>{
 
     final headers = {'Content-Type': 'application/json'};
     final response = await http.get(url);
+    final designatione = await storage.read(key: securedDesignation)??"Unknown";
     if(response.statusCode==200){
       return jsonDecode(response.body);
     }
@@ -74,13 +79,33 @@ class _MachineScannerPageState extends State<MachineScanner>{
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Model: $model\n\n"),
+                  isPatching?Text("Model: $model\n\n"):Text(""),
                   Text("Machine Id: ${snapshot.data!['results'][0]['machine_id']}"),
                   Text("Model Number: ${snapshot.data!['results'][0]['model_number']}"),
                   Text("Serial No: ${snapshot.data!['results'][0]['serial_no']}"),
                   Text("Purchase Date: ${snapshot.data!['results'][0]['purchase_date']}"),
                   Text("Last Breakdown Start: ${snapshot.data!['results'][0]['last_breakdown_start']}"),
                   Text("Status: ${snapshot.data!['results'][0]['status']}"),
+                  Spacer(),
+                  Text("Your Rule is "),
+                  Text("Do you want to change the machine Status as Broken?"),
+
+                  isPatching? CircularProgressIndicator():ElevatedButton(onPressed: ()async{
+                      setState(() {
+                        isPatching = true;
+                      });
+                      final url = "https://machine-maintenance.onrender.com/api/maintenance/machines/${snapshot.data!['results'][0]['id']}/";
+                      final body = {
+                        "status": "Active"
+                      };
+
+                      await http.patch(Uri.parse(url), body:body);
+                      setState(() {
+                        isPatching = false;
+                      });
+                  }, child: Text("Yes")),
+                  Spacer(),
+                  ElevatedButton(onPressed: (){}, child: Text("Scan Again")),
                 ],
               );
           } else{
@@ -99,20 +124,6 @@ class _MachineScannerPageState extends State<MachineScanner>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(""),
-
-          actions: [Row(children: [
-            IconButton(onPressed: (){
-            setState(() {
-              isScanning = !isScanning;
-            });
-            // Navigator.pushNamed(context, "breakdown", arguments: qrCodeValue);
-
-          }, icon: Icon(Icons.repeat))])],
-        ),
-
-
         body:  isScanning? funcScannerBuilder():funcMachineDetailsBuilder(model: qrCodeValue??"No Model Detected"),
       );
   }
