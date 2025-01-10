@@ -23,7 +23,7 @@ class Maintanance extends StatelessWidget {
         body: Center(
           child: Column(
             children: [
-              Btn("All Maintainance", AllMaintainances()),
+              Btn("All Machines", AllMaintainances()),
               Btn("BreakdownLogs", BreakdownPage()),
             ],
           ),
@@ -84,7 +84,7 @@ class _MachineListScreenState extends State<AllMaintainances> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("AllMaintainance"),
+          title: Text("All Machines"),
           actions: [IconButton(onPressed: _refreshData, icon: Icon(Icons.refresh))],
           leading: IconButton(
               onPressed: () {
@@ -113,11 +113,14 @@ class _MachineListScreenState extends State<AllMaintainances> {
 
 Future<List> fetchMachines() async {
   final url = Uri.parse(
-      "https://mocki.io/v1/874aa599-4e6a-4a03-aab6-cedd67ed5ef4");
+      "https://machine-maintenance.onrender.com/api/maintenance/machines/");
 
   final response = await http.get(url);
   if (response.statusCode == 200) {
-    return jsonDecode(response.body);
+    print(response.body);
+    final data = jsonDecode(response.body)["results"];
+    print(data);
+    return data;
   } else {
     throw  Exception("failed to load machine. Makesure you phone have stable internet connection");
   }
