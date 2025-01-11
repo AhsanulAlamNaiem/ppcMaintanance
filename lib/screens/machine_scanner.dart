@@ -74,7 +74,7 @@ class _MachineScannerPageState extends State<MachineScanner>{
               CircularProgressIndicator()
             ],));
           } else if(snapshot.hasData) {
-            return MachineDetailsPage(machineDetails:  snapshot.data!);
+            return MachineDetailsPage(machineDetails:  snapshot.data!,);
           } else{
             return Center(
               child: Column(
@@ -91,6 +91,14 @@ class _MachineScannerPageState extends State<MachineScanner>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(actions: [ElevatedButton(
+        onPressed: () {
+          setState(() {
+            isScanning= true;
+          });
+        },
+        child: const Text("Scan Again"),
+      )],),
         body:  isScanning? funcScannerBuilder():funcMachineDetailsBuilder(model: qrCodeValue??"No Model Detected"),
       );
   }
@@ -120,67 +128,105 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
   @override
   Widget build(BuildContext context) {
     final machine = widget.machineDetails['results'][0];
+    final statuses = ['active', 'inactive', 'maintenance', 'broken'];
+    final designations = ['Mechanic', 'Supervisor', 'Operator', 'Admin Officer'];
 
-    return
-      FutureBuilder(future: getDesignation(), builder: (context, snapshot){
-        if(snapshot.connectionState==ConnectionState.waiting){
-          return CircularProgressIndicator();
+    return FutureBuilder(
+      future: getDesignation(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else {
+          final designation = snapshot.data ?? "Unknown";
+          final machineStatus = machine['status'];
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Machine ID: ${machine['machine_id']}"),
+                Text("Model Number: ${machine['model_number']}"),
+                Text("Serial No: ${machine['serial_no']}"),
+                Text("Purchase Date: ${machine['purchase_date']}"),
+                Text("Last Breakdown Start: ${machine['last_breakdown_start']}"),
+                Text("Status: $machineStatus"),
+                Spacer(),
+
+                // Display based on conditions
+                if (designation == 'Supervisor' && machineStatus == 'active') ...[
+                  Text("Your Role: $designation"),
+                  const Text("Is the machine broken?"),
+                  const SizedBox(height: 16.0),
+                  isPatching? CircularProgressIndicator():ElevatedButton(
+                    onPressed: () => updateMachineStatus(machine['id'].toString(), 'broken'),
+                    child: const Text("Set to Broken"),
+                  ),
+                ] else if (designation == 'Supervisor' && machineStatus == 'maintenance') ...[
+                  Text("Your Role: $designation"),
+                  const Text("Is the machine active now?"),
+                  const SizedBox(height: 16.0),
+                  isPatching? CircularProgressIndicator():ElevatedButton(
+                    onPressed: () => updateMachineStatus(machine['id'].toString(), 'active'),
+                    child: const Text("Set to Active"),
+                  ),
+                ] else if (designation == 'Mechanic' && machineStatus == 'broken') ...[
+                  Text("Your Role: $designation"),
+                  const Text("Do you want to set the machine status to Maintenance?"),
+                  const SizedBox(height: 16.0),
+                  isPatching? CircularProgressIndicator():ElevatedButton(
+                    onPressed: () => updateMachineStatus(machine['id'].toString(), 'maintenance'),
+                    child: const Text("Set to Maintenance"),
+                  ),
+                ] else if (designation == 'Admin Officer') ...[
+                  Text("Your Role: $designation"),
+                  const Text("Change machine status to:"),
+                  const SizedBox(height: 16.0),
+                  DropdownButton<String>(
+                    value: machineStatus,
+                    items: statuses.map((status) {
+                      return DropdownMenuItem(
+                        value: status,
+                        child: Text(status),
+                      );
+                    }).toList(),
+                    onChanged: (newStatus) {
+                      if (newStatus != null) {
+                        updateMachineStatus(machine['id'], newStatus);
+                      }
+                    },
+                  ),
+                ],
+              ],
+            ),
+          );
         }
-        else {
-          final desigNation = snapshot.data??"Unknown";
-        return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Machine ID: ${machine['machine_id']}"),
-          Text("Model Number: ${machine['model_number']}"),
-          Text("Serial No: ${machine['serial_no']}"),
-          Text("Purchase Date: ${machine['purchase_date']}"),
-          Text("Last Breakdown Start: ${machine['last_breakdown_start']}"),
-          Text("Status: ${machine['status']}"),
-          const Spacer(),
-          Text("Your Rule is: $desigNation"),
-          const Text("Do you want to change the machine status to Broken?"),
-          const SizedBox(height: 16.0),
-          isPatching
-              ? const Center(child: CircularProgressIndicator())
-              : ElevatedButton(
-            onPressed: () async {
-              setState(() {
-                isPatching = true;
-              });
-
-              final url =
-                  "https://machine-maintenance.onrender.com/api/maintenance/machines/${machine['id']}/";
-              final body = {"status": "Broken"};
-
-              try {
-                await http.patch(
-                  Uri.parse(url),
-                  body: body,
-                );
-              } catch (e) {
-                // Handle error
-                print("Error: $e");
-              }
-
-              setState(() {
-                isPatching = false;
-              });
-            },
-            child: const Text("Yes"),
-          ),
-          const Spacer(),
-          ElevatedButton(
-            onPressed: () {
-              // Implement the scan again functionality
-            },
-            child: const Text("Scan Again"),
-          ),
-        ],
-      ),
-    );}
-      });
+      },
+    );
   }
-}
+
+// Function to update the machine status
+  Future<void> updateMachineStatus(String machineId, String newStatus) async {
+    final url = "https://machine-maintenance.onrender.com/api/maintenance/machines/$machineId/";
+    final body = {"status": newStatus};
+
+    setState(() {
+      isPatching = true;
+    });
+
+    try {
+      await http.patch(
+        Uri.parse(url),
+        body: body,
+      );
+      print("Status updated to $newStatus");
+    } catch (e) {
+      print("Error: $e");
+    } finally {
+      setState(() {
+        isPatching = false;
+      });
+    }
+  }
+
+}//stagefull widget
