@@ -154,28 +154,51 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
                 Spacer(),
 
                 // Display based on conditions
-                if (designation == 'Supervisor' && machineStatus == 'active') ...[
+                if(designation == 'Supervisor' && machineStatus == 'active') ...[
                   Text("Your Role: $designation"),
                   const Text("Is the machine broken?"),
                   const SizedBox(height: 16.0),
                   isPatching? CircularProgressIndicator():ElevatedButton(
-                    onPressed: () => updateMachineStatus(machine['id'].toString(), 'broken'),
+                    onPressed: () => updateMachineStatus(machineId:  machine['id'].toString(), newStatus:  'broken'),
                     child: const Text("Set to Broken"),
                   ),
-                ] else if (designation == 'Supervisor' && machineStatus == 'maintenance') ...[
+                ]
+                else if (designation == 'Supervisor' && machineStatus == 'maintenance') ...[// && machineStatus == 'maintenance'
                   Text("Your Role: $designation"),
                   const Text("Is the machine active now?"),
                   const SizedBox(height: 16.0),
                   isPatching? CircularProgressIndicator():ElevatedButton(
-                    onPressed: () => updateMachineStatus(machine['id'].toString(), 'active'),
+                    onPressed: () {
+                      DateTime startTime = DateTime.parse("2025-01-09T15:00:00Z");
+                      DateTime endTime = DateTime.parse("2025-01-09T18:28:00Z");
+                      String formattedDuration = endTime.difference(startTime).toString().split('.').first;
+
+                      final breakdownBody = {
+                        "breakdown_start": "2025-01-09T18:00:00Z",
+                        "repairing_start": DateTime.now().toUtc().toString().split('.').first + 'Z',
+                        "lost_time": formattedDuration,
+                        "comments": "",
+                        "machine": "${machine['id']}",
+                        "mechanic": "",
+                        "operator": "",
+                        "problem_category": "1",
+                        "location": "1"
+                      };
+                      print(breakdownBody);
+                      updateMachineStatus(machineId:  machine['id'].toString(), newStatus:  'active', willUpdateBreakdown: true, breakdownBody: breakdownBody);
+
+                      },
                     child: const Text("Set to Active"),
                   ),
-                ] else if (designation == 'Mechanic' && machineStatus == 'broken') ...[
+
+
+                ]
+                else if (designation == 'Mechanic' && machineStatus == 'broken') ...[
                   Text("Your Role: $designation"),
                   const Text("Do you want to set the machine status to Maintenance?"),
                   const SizedBox(height: 16.0),
                   isPatching? CircularProgressIndicator():ElevatedButton(
-                    onPressed: () => updateMachineStatus(machine['id'].toString(), 'maintenance'),
+                    onPressed: () => updateMachineStatus(machineId:  machine['id'].toString(), newStatus:  'maintenance'),
                     child: const Text("Set to Maintenance"),
                   ),
                 ] else if (designation == 'Admin Officer') ...[
@@ -192,7 +215,7 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
                     }).toList(),
                     onChanged: (newStatus) {
                       if (newStatus != null) {
-                        updateMachineStatus(machine['id'], newStatus);
+                        updateMachineStatus( machineId:  machine['id'], newStatus:  newStatus);
                       }
                     },
                   ),
@@ -206,9 +229,10 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
   }
 
 // Function to update the machine status
-  Future<void> updateMachineStatus(String machineId, String newStatus) async {
+  Future<void> updateMachineStatus({required String machineId, required String newStatus, Map breakdownBody= const {}, bool willUpdateBreakdown = false}) async {
     final url = "https://machine-maintenance.onrender.com/api/maintenance/machines/$machineId/";
     final body = {"status": newStatus};
+    final breakDownUrl = "https://machine-maintenance.onrender.com/api/maintenance/breakdown-logs/";
 
     setState(() {
       isPatching = true;
@@ -220,6 +244,16 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
         body: body,
       );
       print("Status updated to $newStatus");
+
+      if(willUpdateBreakdown){
+        final patchResponse = await http.post(Uri.parse(breakDownUrl),body:breakdownBody);
+        print(breakdownBody);
+        print("Breakdown updated ${patchResponse.body}");
+
+      } else {
+        print("will not Update breaddwonLodg");
+      }
+
     } catch (e) {
       print("Error: $e");
     } finally {
@@ -227,6 +261,10 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
         isPatching = false;
       });
     }
+
+
+
   }
+
 
 }//stagefull widget
