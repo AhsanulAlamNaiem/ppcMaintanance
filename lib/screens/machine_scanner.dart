@@ -154,28 +154,39 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
                 Spacer(),
 
                 // Display based on conditions
-                if(designation == 'Supervisor' && machineStatus == 'active') ...[
+                if(designation == 'Supervisor' && machineStatus == 'actives') ...[ //stage active to broken  && machineStatus == 'active'
                   Text("Your Role: $designation"),
                   const Text("Is the machine broken?"),
                   const SizedBox(height: 16.0),
                   isPatching? CircularProgressIndicator():ElevatedButton(
-                    onPressed: () => updateMachineStatus(machineId:  machine['id'].toString(), newStatus:  'broken'),
+
+                    onPressed: () {
+                      final currentTIme = DateTime.now().toUtc().toString().split('.').first;
+                      Map body = {"status": "broken",
+                      "last_breakdown_start":  currentTIme.split(" ")[0] + "T" + currentTIme.split(" ")[1] + "Z"
+                      };
+
+                      print(body);
+                      updateMachineStatus(machineId:  machine['id'].toString(), body:  body);},
                     child: const Text("Set to Broken"),
                   ),
                 ]
-                else if (designation == 'Supervisor' && machineStatus == 'maintenance') ...[// && machineStatus == 'maintenance'
+                else if (designation == 'Supervisor' && machineStatus == 'maintenance') ...[//&& machineStatus == 'maintenance'
                   Text("Your Role: $designation"),
                   const Text("Is the machine active now?"),
                   const SizedBox(height: 16.0),
                   isPatching? CircularProgressIndicator():ElevatedButton(
                     onPressed: () {
-                      DateTime startTime = DateTime.parse("2025-01-09T15:00:00Z");
-                      DateTime endTime = DateTime.parse("2025-01-09T18:28:00Z");
+                      DateTime startTime = DateTime.parse("${machine['last_breakdown_start']}");
+                      DateTime endTime = DateTime.parse(DateTime.now().toUtc().toString().split('.').first + 'Z');
                       String formattedDuration = endTime.difference(startTime).toString().split('.').first;
 
+                      Map body = {"status": "active",
+                      };
+
                       final breakdownBody = {
-                        "breakdown_start": "2025-01-09T18:00:00Z",
-                        "repairing_start": DateTime.now().toUtc().toString().split('.').first + 'Z',
+                        "breakdown_start": "$startTime",
+                        "repairing_start": "${machine['repairing_start']??"2025-01-09T11:50:00Z"}",
                         "lost_time": formattedDuration,
                         "comments": "",
                         "machine": "${machine['id']}",
@@ -185,7 +196,7 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
                         "location": "1"
                       };
                       print(breakdownBody);
-                      updateMachineStatus(machineId:  machine['id'].toString(), newStatus:  'active', willUpdateBreakdown: true, breakdownBody: breakdownBody);
+                      updateMachineStatus(machineId:  machine['id'].toString(), body:  body, willUpdateBreakdown: true, breakdownBody: breakdownBody);
 
                       },
                     child: const Text("Set to Active"),
@@ -193,29 +204,35 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
 
 
                 ]
-                else if (designation == 'Mechanic' && machineStatus == 'broken') ...[
+                else if (designation == 'Mechanic' && machineStatus == 'broken') ...[//stage broken to maintenance
                   Text("Your Role: $designation"),
                   const Text("Do you want to set the machine status to Maintenance?"),
                   const SizedBox(height: 16.0),
                   isPatching? CircularProgressIndicator():ElevatedButton(
-                    onPressed: () => updateMachineStatus(machineId:  machine['id'].toString(), newStatus:  'maintenance'),
-                    child: const Text("Set to Maintenance"),
-                  ),
-                ] else if (designation == 'Admin Officer') ...[
-                  Text("Your Role: $designation"),
-                  const Text("Change machine status to:"),
-                  const SizedBox(height: 16.0),
-                  DropdownButton<String>(
-                    value: machineStatus,
-                    items: statuses.map((status) {
-                      return DropdownMenuItem(
-                        value: status,
-                        child: Text(status),
-                      );
-                    }).toList(),
+                    onPressed: (){
+                      Map body = {"status": "maintenance",
+                      "repairing_start": DateTime.now().toUtc().toString().split('.').first + 'Z'
+                      };
+                      updateMachineStatus(machineId:  machine['id'].toString(), body: body);},
+        child: const Text("Set to Maintenance"),
+        ),
+
+        ] else if (designation == 'Admin Officer') ...[
+        Text("Your Role: $designation"),
+        const Text("Change machine status to:"),
+        const SizedBox(height: 16.0),
+        DropdownButton<String>(
+        value: machineStatus,
+        items: statuses.map((status) {
+        return DropdownMenuItem(
+        value: status,
+        child: Text(status),
+        );
+        }
+        ).toList(),
                     onChanged: (newStatus) {
                       if (newStatus != null) {
-                        updateMachineStatus( machineId:  machine['id'], newStatus:  newStatus);
+                        updateMachineStatus( machineId:  machine['id'], body: {});
                       }
                     },
                   ),
@@ -229,9 +246,8 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
   }
 
 // Function to update the machine status
-  Future<void> updateMachineStatus({required String machineId, required String newStatus, Map breakdownBody= const {}, bool willUpdateBreakdown = false}) async {
+  Future<void> updateMachineStatus({required String machineId, required Map body, Map breakdownBody= const {}, bool willUpdateBreakdown = false}) async {
     final url = "https://machine-maintenance.onrender.com/api/maintenance/machines/$machineId/";
-    final body = {"status": newStatus};
     final breakDownUrl = "https://machine-maintenance.onrender.com/api/maintenance/breakdown-logs/";
 
     setState(() {
@@ -239,11 +255,12 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
     });
 
     try {
-      await http.patch(
+      final response = await http.patch(
         Uri.parse(url),
         body: body,
       );
-      print("Status updated to $newStatus");
+      print(response.body);
+      print("Status updated to $body");
 
       if(willUpdateBreakdown){
         final patchResponse = await http.post(Uri.parse(breakDownUrl),body:breakdownBody);
