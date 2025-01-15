@@ -186,7 +186,7 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
 
                       final breakdownBody = {
                         "breakdown_start": "$startTime",
-                        "repairing_start": "${machine['repairing_start']??"2025-01-09T11:50:00Z"}",
+                        "repairing_start": "${machine['last_repairing_start']??"2025-01-09T11:50:00Z"}",
                         "lost_time": formattedDuration,
                         "comments": "",
                         "machine": "${machine['id']}",
@@ -210,8 +210,9 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
                   const SizedBox(height: 16.0),
                   isPatching? CircularProgressIndicator():ElevatedButton(
                     onPressed: (){
+                      final currentTIme = DateTime.now().toUtc().toString().split('.').first;
                       Map body = {"status": "maintenance",
-                      "repairing_start": DateTime.now().toUtc().toString().split('.').first + 'Z'
+                      "last_repairing_start": currentTIme.split(" ")[0] + "T" + currentTIme.split(" ")[1] + "Z"
                       };
                       updateMachineStatus(machineId:  machine['id'].toString(), body: body);},
         child: const Text("Set to Maintenance"),

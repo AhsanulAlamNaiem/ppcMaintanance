@@ -30,7 +30,7 @@ class _LogInPageState extends State<LogInPage>{
       isLoading = true;
     });
     final url = Uri.parse(
-        "https://fast-tracker-bo3s.onrender.com/api/user_management/login/");
+        "https://machine-maintenance.onrender.com/api/user_management/login/");
     //https://ppcinern.pythonanywhere.com/login
     final body = jsonEncode({
       "email": email,
@@ -50,7 +50,7 @@ class _LogInPageState extends State<LogInPage>{
 
       if(token!=null) {
         final employeUrl = Uri.parse(
-            "https://fast-tracker-bo3s.onrender.com/api/user_management/employee-details/");
+            "https://machine-maintenance.onrender.com/api/user_management/employee-details/");
         final headers = {"cookie":cookie,
           "Authorization": "Token $token"};
 
