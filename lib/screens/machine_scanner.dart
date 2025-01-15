@@ -145,6 +145,8 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
   bool isPatching = false;
   int selectedCategoryIndex = -1;
   String? selectedCategory;
+  List<dynamic> problemCategories = [];
+  bool isFetchingProblemCategory = true;
 
   Future<String?> getDesignation() async {
     final storage = FlutterSecureStorage();
@@ -154,6 +156,29 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
     return designation;
   }
 
+  @override
+  void initState() {
+    super.initState();
+    print("initiated");
+    fetchProblemCategories();
+    print("fetched");
+    isFetchingProblemCategory = false;
+  }
+  Future<void> fetchProblemCategories() async {
+    final String apiUrl = "https://machine-maintenance.onrender.com/api/maintenance/problem-category/"; // Replace with your API URL
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+      if (response.statusCode == 200) {
+        setState(() {
+          problemCategories = json.decode(response.body);
+        });
+      } else {
+        throw Exception('Failed to load data');
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -218,16 +243,15 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
                   const Text("Is the machine active now?"),
                   const SizedBox(height: 16.0),
 
-                  DropdownButton<String>(
+                  problemCategories.isEmpty? CircularProgressIndicator():DropdownButton<String>(
                     value: selectedCategory,
                     hint: Text("Selected Problem Category:"),
-                    items: problemCategory.map((problem) {
-                      return DropdownMenuItem(
-                        value: problem,
-                        child: Text(problem),
+                    items: problemCategories.map((category) {
+                      return DropdownMenuItem<String>(
+                        value: category['name'],
+                        child: Text(category['name']),
                       );
-                    }
-                    ).toList(),
+                    }).toList(),
                     onChanged: (String? newValue) {
                         setState(() {
                           selectedCategory = newValue;
@@ -261,7 +285,8 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
                         "mechanic": "",
                         "operator": "",
                         "problem_category": "$selectedCategoryIndex",
-                        "location": "1"
+                        "location": "1",
+                        "line": "${machine['line']}",
                       };
                       print(breakdownBody);
                       updateMachineStatus(machineId:  machine['id'].toString(), body:  body, willUpdateBreakdown: true, breakdownBody: breakdownBody);
