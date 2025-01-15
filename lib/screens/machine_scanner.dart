@@ -17,6 +17,7 @@ class _MachineScannerPageState extends State<MachineScanner>{
   bool isScanning = true;
   final storage = FlutterSecureStorage();
   final securedDesignation = "designation";
+  bool isScanned = false;
 
   Widget funcScannerBuilder() {
     return Column(
@@ -24,26 +25,44 @@ class _MachineScannerPageState extends State<MachineScanner>{
         Expanded(
           flex: 4,
           child: MobileScanner(
-            onDetect: (BarcodeCapture capture) {
+
+            onDetect: (BarcodeCapture capture) async {
+              print(isScanned);
               if(capture.raw!=null){
-                Vibration.vibrate();
                 setState(()  {
                   qrCodeValue = capture.barcodes[0].rawValue;
                    // Trigger a single vibration
+                  Vibration.vibrate();
                   isScanning = !isScanning;
-                  // showDialog(
-                  //   context: context,
-                  //   barrierDismissible: false,
-                  //   builder: (BuildContext context){
-                  //     return AlertDialog(
-                  //       title: Text("Model: $qrCodeValue"),
-                  //     );
-                  //   }
-                  // );
                 });
+
+                // if(!isScanned){
+                //
+                //   Vibration.vibrate();
+                //   bool? result = await showDialog(
+                //     context: context,
+                //     barrierDismissible: false,
+                //     builder: (BuildContext context){
+                //       return AlertDialog(
+                //         title: Text("Model: ${capture.barcodes[0].rawValue}"),
+                //         content: Text("Machine description is here"),
+                //         actions: [
+                //           ElevatedButton(onPressed: (){}, child: Text("Yes")),
+                //           ElevatedButton(onPressed: (){
+                //             Navigator.of(context).pop(false);
+                //             }, child: Text("Cancel"))
+                //         ],
+                //       );
+                //     }
+                // );
+                //   print(result);
+                //   result!? isScanned =  false: isScanned =false;
+                //
+                // };
 
               }
             },
+
           ),
         ),
         Expanded(
@@ -108,7 +127,7 @@ class _MachineScannerPageState extends State<MachineScanner>{
         },
         child: const Text("Scan Again"),
       )],),
-        body:  isScanning? funcScannerBuilder():funcMachineDetailsBuilder(model: qrCodeValue??"No Model Detected"),
+        body:  isScanning? funcScannerBuilder():  funcMachineDetailsBuilder(model: qrCodeValue??"No Model Detected"),
       );
   }
 }
@@ -139,6 +158,7 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
     final machine = widget.machineDetails['results'][0];
     final statuses = ['active', 'inactive', 'maintenance', 'broken'];
     final designations = ['Mechanic', 'Supervisor', 'Operator', 'Admin Officer'];
+    String lastProblem = "";
 
     return FutureBuilder(
       future: getDesignation(),
@@ -161,18 +181,28 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
                 Text("Last Breakdown Start: ${machine['last_breakdown_start']}"),
                 Text("Status: $machineStatus"),
                 Spacer(),
-
+                // SizedBox(height: 50),
                 // Display based on conditions
                 if(designation == 'Supervisor' && machineStatus == 'active') ...[ //stage active to broken  && machineStatus == 'active'
                   Text("Your Role: $designation"),
                   const Text("Is the machine broken?"),
-                  const SizedBox(height: 16.0),
+                  SizedBox(height: 16),
+                  TextField(
+                    decoration: InputDecoration(
+                        hintText: '',
+                        border: OutlineInputBorder(),
+                        labelText: "Explain the problem:"
+                    ),
+                    onChanged: (value) {lastProblem = value;},
+                  ),
+                  SizedBox(height: 16),
                   isPatching? CircularProgressIndicator():ElevatedButton(
 
                     onPressed: () {
                       final currentTIme = DateTime.now().toUtc().toString().split('.').first;
                       Map body = {"status": "broken",
-                      "last_breakdown_start":  currentTIme.split(" ")[0] + "T" + currentTIme.split(" ")[1] + "Z"
+                      "last_breakdown_start":  currentTIme.split(" ")[0] + "T" + currentTIme.split(" ")[1] + "Z",
+                        "last_problem":lastProblem
                       };
 
                       print(body);
