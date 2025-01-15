@@ -143,6 +143,8 @@ class MachineDetailsPage extends StatefulWidget {
 
 class _MachineDetailsPageState extends State<MachineDetailsPage> {
   bool isPatching = false;
+  int selectedCategoryIndex = -1;
+  String? selectedCategory;
 
   Future<String?> getDesignation() async {
     final storage = FlutterSecureStorage();
@@ -157,6 +159,7 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
   Widget build(BuildContext context) {
     final machine = widget.machineDetails['results'][0];
     final statuses = ['active', 'inactive', 'maintenance', 'broken'];
+    final problemCategory = ['Problem Cat 1', 'Problem Cat 2', 'Problem Cat 3', 'Problem Cat 4'];
     final designations = ['Mechanic', 'Supervisor', 'Operator', 'Admin Officer'];
     String lastProblem = "";
 
@@ -214,6 +217,32 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
                   Text("Your Role: $designation"),
                   const Text("Is the machine active now?"),
                   const SizedBox(height: 16.0),
+
+                  DropdownButton<String>(
+                    value: selectedCategory,
+                    hint: Text("Selected Problem Category:"),
+                    items: problemCategory.map((problem) {
+                      return DropdownMenuItem(
+                        value: problem,
+                        child: Text(problem),
+                      );
+                    }
+                    ).toList(),
+                    onChanged: (String? newValue) {
+                        setState(() {
+                          selectedCategory = newValue;
+                          selectedCategoryIndex =
+                              problemCategory.indexOf(newValue!)+1;
+                          print(selectedCategoryIndex);
+                        });
+                    },
+                  ),
+                  const SizedBox(height: 16.0),
+
+
+
+
+
                   isPatching? CircularProgressIndicator():ElevatedButton(
                     onPressed: () {
                       DateTime startTime = DateTime.parse("${machine['last_breakdown_start']}");
@@ -231,7 +260,7 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
                         "machine": "${machine['id']}",
                         "mechanic": "",
                         "operator": "",
-                        "problem_category": "1",
+                        "problem_category": "$selectedCategoryIndex",
                         "location": "1"
                       };
                       print(breakdownBody);
