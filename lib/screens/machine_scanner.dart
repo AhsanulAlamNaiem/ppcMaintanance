@@ -31,6 +31,15 @@ class _MachineScannerPageState extends State<MachineScanner>{
                   qrCodeValue = capture.barcodes[0].rawValue;
                    // Trigger a single vibration
                   isScanning = !isScanning;
+                  // showDialog(
+                  //   context: context,
+                  //   barrierDismissible: false,
+                  //   builder: (BuildContext context){
+                  //     return AlertDialog(
+                  //       title: Text("Model: $qrCodeValue"),
+                  //     );
+                  //   }
+                  // );
                 });
 
               }
@@ -154,7 +163,7 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
                 Spacer(),
 
                 // Display based on conditions
-                if(designation == 'Supervisor' && machineStatus == 'actives') ...[ //stage active to broken  && machineStatus == 'active'
+                if(designation == 'Supervisor' && machineStatus == 'active') ...[ //stage active to broken  && machineStatus == 'active'
                   Text("Your Role: $designation"),
                   const Text("Is the machine broken?"),
                   const SizedBox(height: 16.0),
