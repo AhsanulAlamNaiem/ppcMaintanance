@@ -248,15 +248,14 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
                     hint: Text("Selected Problem Category:"),
                     items: problemCategories.map((category) {
                       return DropdownMenuItem<String>(
-                        value: category['name'],
+                        value: category['id'].toString(),
                         child: Text(category['name']),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
                         setState(() {
                           selectedCategory = newValue;
-                          selectedCategoryIndex =
-                              problemCategory.indexOf(newValue!)+1;
+                          selectedCategoryIndex = int.parse(newValue!);
                           print(selectedCategoryIndex);
                         });
                     },
@@ -269,6 +268,17 @@ class _MachineDetailsPageState extends State<MachineDetailsPage> {
 
                   isPatching? CircularProgressIndicator():ElevatedButton(
                     onPressed: () {
+
+                      if (selectedCategoryIndex==-1){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Category should be selected should not be 0!"),
+                            duration: Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        return;
+                      }
                       DateTime startTime = DateTime.parse("${machine['last_breakdown_start']}");
                       DateTime endTime = DateTime.parse(DateTime.now().toUtc().toString().split('.').first + 'Z');
                       String formattedDuration = endTime.difference(startTime).toString().split('.').first;
